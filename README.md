@@ -4,6 +4,7 @@ rest.py
 Python REST Server
 
 Usage:
+
 	Run from webroot:
 		python rest.py
 		./rest.py
