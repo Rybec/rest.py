@@ -1,4 +1,5 @@
 import mimetypes
+import urllib
 import os
 
 # Constants
@@ -145,13 +146,14 @@ class ResourceResponse(Response):
 			# Split the query string first at & and then split
 			# expressions at = and put the result into a dictionary
 			try:
-				self.query = {key:value 
+				self.query = {urllib.unquote_plus(key):urllib.unquote_plus(value)
 				              for key, value in [element.split("=")
 				              for element in self.query.split("&")]}
 			except:
 				# We will assume that the malformed query
 				# string was intentional, and we will let
 				# the application handle it
+				self.query = urllib.unquote_plus(self.query)
 				pass
 		else:
 			self.resource = self.request.path.strip("/")
