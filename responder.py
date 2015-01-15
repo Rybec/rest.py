@@ -252,7 +252,7 @@ class FileResponse(Response):
 
 			# Send HTTP header data
 			self.request.send_response(self.response)
-			self.request.send_header('Content-Type', self.content)
+			self.request.send_header('Content-Type', self.content + "; charset=utf-8")
 			self.request.send_header('Content-Length', file_size)
 			self.request.end_headers()
 
