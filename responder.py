@@ -210,26 +210,20 @@ class ResourceResponse(Response):
 			self.send_error()
 			return
 
-		self._encode_cookie()
-
 		# Send HTTP header data
 		self.request.send_response(self.response)
 		self.request.send_header('Content-Type', self.content)
 		self.request.send_header('Content-Length', len(data))
-		if self.cookie:
-			self.request.send_header('Set-Cookie', self.encoded_cookie)
+		self._send_cookies()
 		self.request.end_headers()
 
 		# Send the data
 		self.request.wfile.write(data)
 
-	def _encode_cookie(self):
-		self.encoded_cookie = ""
-
+	def _send_cookies(self):
 		for k, v in self.cookie.iteritems():
-			self.encoded_cookie += str(k) + "=" + str(v) + "; "
-
-		self.encoded_cookie = self.encoded_cookie[:-2]
+			cookie = str(k) + "=" + str(v)
+			self.request.send_header('Set-Cookie', cookie)
 
 # For file handling
 class FileResponse(Response):
