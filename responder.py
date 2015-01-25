@@ -190,7 +190,7 @@ class ResourceResponse(Response):
 			try:
 				request.cookie = {key:value
 				               for key, value in [element.split("=")
-				               for element in self.cookie.split("; ")]}
+				               for element in request.cookie.split("; ")]}
 			except:
 				pass
 
