@@ -167,6 +167,21 @@ class ResourceResponse(Response):
 		else:
 			self.subpath = None
 
+		# If this is a POST request, let's kindly parse the data if it is
+		# form data.
+		if (request.command == "POST" and \
+		    "Content-Type" in request.headers and \
+		    "application/x-www-form-urlencoded" in request.headers["Content-Type"]):
+			try:
+				clength = int(request.headers["Content-Length"])
+
+				self.postquery = request.rfile.read(clength)
+				self.postquery = {urllib.unquote_plus(key):urllib.unquote_plus(value)
+				                  for key, value in [element.split("=")
+				                  for element in self.postquery.split("&")]}
+			except:
+				pass
+
 	# This should generate the data, then send the header and then the data
 	def send(self):
 		global response_handlers
