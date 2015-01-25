@@ -210,7 +210,7 @@ class ResourceResponse(Response):
 			self.send_error()
 			return
 
-		_encode_cookie()
+		self._encode_cookie()
 
 		# Send HTTP header data
 		self.request.send_response(self.response)
@@ -223,11 +223,11 @@ class ResourceResponse(Response):
 		# Send the data
 		self.request.wfile.write(data)
 
-	def _encode_cookie():
+	def _encode_cookie(self):
 		self.encoded_cookie = ""
 
 		for k, v in self.cookie.iteritems():
-			self.encoded_cookie = k + "=" + v + "; "
+			self.encoded_cookie = str(k) + "=" + str(v) + "; "
 
 		self.encoded_cookie = self.encoded_cookie[:-2]
 
