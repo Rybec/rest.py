@@ -227,7 +227,7 @@ class ResourceResponse(Response):
 		self.encoded_cookie = ""
 
 		for k, v in self.cookie.iteritems():
-			self.encoded_cookie = str(k) + "=" + str(v) + "; "
+			self.encoded_cookie += str(k) + "=" + str(v) + "; "
 
 		self.encoded_cookie = self.encoded_cookie[:-2]
 
