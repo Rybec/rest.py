@@ -104,7 +104,7 @@ class ThreadedHTTPServer(ThreadingMixIn, BaseHTTPServer.HTTPServer):
 	'''
 
 def run():
-	httpd = ThreadedHTTPServer(("localhost", 8000), RequestHandler)
+	httpd = ThreadedHTTPServer(("", 8000), RequestHandler)
 
 	# If we run this in a separate thread, then we can
 	# run some kind of command line interface in the
