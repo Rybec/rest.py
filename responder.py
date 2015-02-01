@@ -135,6 +135,7 @@ class ResourceResponse(Response):
 	def __init__(self, request):
 		# Call parent constructor
 		super(ResourceResponse, self).__init__(request)
+		self.cookie   = {}
 
 		# Parse the URL path
 
@@ -176,9 +177,20 @@ class ResourceResponse(Response):
 				clength = int(request.headers["Content-Length"])
 
 				self.postquery = request.rfile.read(clength)
-				self.postquery = {urllib.unquote_plus(key):urllib.unquote_plus(value)
+				self.postquery = {key:value
 				                  for key, value in [element.split("=")
 				                  for element in self.postquery.split("&")]}
+			except:
+				pass
+
+		# Ok, so we will handle cookies too...
+		if "Cookie" in request.headers:
+			request.cookie = request.headers["Cookie"]
+
+			try:
+				request.cookie = {key:value
+				               for key, value in [element.split("=")
+				               for element in request.cookie.split("; ")]}
 			except:
 				pass
 
@@ -202,13 +214,16 @@ class ResourceResponse(Response):
 		self.request.send_response(self.response)
 		self.request.send_header('Content-Type', self.content)
 		self.request.send_header('Content-Length', len(data))
+		self._send_cookies()
 		self.request.end_headers()
 
 		# Send the data
 		self.request.wfile.write(data)
 
-
-
+	def _send_cookies(self):
+		for k, v in self.cookie.iteritems():
+			cookie = str(k) + "=" + str(v)
+			self.request.send_header('Set-Cookie', cookie)
 
 # For file handling
 class FileResponse(Response):
