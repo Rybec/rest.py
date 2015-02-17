@@ -10,6 +10,10 @@ import os
 BUFFER_SIZE = 1024 * 8
 
 
+# Runtime constants
+CWD = os.getcwd()
+
+
 # Internal globals
 
 # Each element must be a dict of resource keys referencing the response
@@ -236,13 +240,17 @@ class FileResponse(Response):
 		super(FileResponse, self).__init__(request)
 
 		# Trim any query string
-		self.path = self.request.path.split("?", 1)[0]
+		self.path = CWD + os.path.normpath(self.request.path.split("?", 1)[0])
+		print self.path
 
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# !!Double Check this, and then remove entirely!!
 # Python's HTTP module appears to already do this
 # consider this part for deletion
 		# Convert to absolute path (this will remove symbols
 		# like "..", to ensure security)
-		self.path = os.path.abspath(self.path)
+#		self.path = os.path.abspath(self.path)
+
 
 		# Find the MIME type and set the content
 		(self.content, _) = mimetypes.guess_type(self.path)
@@ -253,7 +261,7 @@ class FileResponse(Response):
 	def send(self):
 		file_size = 0
 		try:
-			file_size = os.path.getsize(os.getcwd() + self.path)
+			file_size = os.path.getsize(self.path)
 		except OSError as e:
 			data = ""
 			if e.errno == 2:	# No such file...
@@ -278,7 +286,7 @@ class FileResponse(Response):
 
 		file = None
 		try:
-			file = open(os.getcwd() + self.path)
+			file = open(self.path)
 
 			# Send HTTP header data
 			self.request.send_response(self.response)
