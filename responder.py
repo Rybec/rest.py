@@ -241,16 +241,6 @@ class FileResponse(Response):
 
 		# Trim any query string
 		self.path = CWD + os.path.normpath(self.request.path.split("?", 1)[0])
-		print self.path
-
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-# !!Double Check this, and then remove entirely!!
-# Python's HTTP module appears to already do this
-# consider this part for deletion
-		# Convert to absolute path (this will remove symbols
-		# like "..", to ensure security)
-#		self.path = os.path.abspath(self.path)
-
 
 		# Find the MIME type and set the content
 		(self.content, _) = mimetypes.guess_type(self.path)
