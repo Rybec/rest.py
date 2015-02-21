@@ -174,18 +174,28 @@ class ResourceResponse(Response):
 
 		# If this is a POST request, let's kindly parse the data if it is
 		# form data.
-		if (request.command == "POST" and \
-		    "Content-Type" in request.headers and \
-		    "application/x-www-form-urlencoded" in request.headers["Content-Type"]):
+		if request.command == "POST" and \
+		   "Content-Type" in request.headers and \
+		   "application/x-www-form-urlencoded" in request.headers["Content-Type"]:
 			try:
 				clength = int(request.headers["Content-Length"])
 
 				self.postquery = request.rfile.read(clength)
+				# Turn the form data into a dictionary
 				self.postquery = {key:value
 				                  for key, value in [element.split("=")
 				                  for element in self.postquery.split("&")]}
 			except:
 				pass
+		# If the POST data is JSON data, we will read it into
+		# a string for the application.
+		elif request.command == "POST" and \
+		     "Content-Type" in request.headers and \
+		     "application/json" in request.headers["Content-Type"]:
+
+			clength = int(request.headers["Content-Length"])
+			self.postjson = request.rfile.read(clength)
+
 
 		# Ok, so we will handle cookies too...
 		if "Cookie" in request.headers:
