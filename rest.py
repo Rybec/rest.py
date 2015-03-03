@@ -11,6 +11,7 @@ import responder
 # These are files that should be in webroot/resources/
 gethandlers  = ["gethandlers.py"]
 posthandlers = ["posthandlers.py"]
+deletehandlers = ["deletehandlers.py"]
 
 # This should probably be converted to a config file, or a section
 # in a config file.  (In fact, maybe all of the modules should be
@@ -23,6 +24,7 @@ INDEX = "/index.html"
 def init():
 	global gethandlers
 	global posthandlers
+	global deletehandlers
 	global shadowhandler
 
 	sys.path.append('resources')
@@ -36,19 +38,37 @@ def init():
 	# get and post handlers to overwrite if necessary
 	for handler in shadowhandlers:
 		name = handler.split('.')[0]
-		mod = imp.load_source(name, "resources/" + handler)
-		responder.addGet(mod)
-		responder.addPost(mod)
+		try:
+			mod = imp.load_source(name, "resources/" + handler)
+			responder.addGet(mod)
+			responder.addPost(mod)
+		except:
+			print "Unable to load shadowhanders from " + handler
 
 	for handler in gethandlers:
 		name = handler.split('.')[0]
-		resource = imp.load_source(name, "resources/" + handler)
-		responder.addGet(resource)
+		try:
+			resource = imp.load_source(name, "resources/" + handler)
+			responder.addGet(resource)
+		except:
+			print "Unable to load gethanders from " + handler
 
 	for handler in posthandlers:
 		name = handler.split('.')[0]
-		resource = imp.load_source(name, "resources/" + handler)
-		responder.addPost(resource)
+		try:
+			resource = imp.load_source(name, "resources/" + handler)
+			responder.addPost(resource)
+		except:
+			print "Unable to load posthanders from " + handler
+
+
+	for handler in deletehandlers:
+		name = handler.split('.')[0]
+		try:
+			resource = imp.load_source(name, "resources/" + handler)
+			responder.addDelete(resource)
+		except:
+			print "Unable to load deletehanders from " + handler
 
 
 # We need two types of response object, probably in an external
@@ -88,13 +108,18 @@ class RequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 		response = responder.getresponse(self)
 		response.send()
 
-
 # This needs to go in a mock POST resource handler.
 		# Just for fun, we are going to return the parsed form data
 #		for key in form.keys():
 #			self.wfile.write('\t%s = %s\n' % (key, form[key].value))
 
 		return
+
+
+	# DELETE request handler
+	def do_DELETE(self):
+		response = responder.getresponse(self)
+		response.send()
 
 
 class ThreadedHTTPServer(ThreadingMixIn, BaseHTTPServer.HTTPServer):

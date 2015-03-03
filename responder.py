@@ -21,7 +21,7 @@ CWD = os.getcwd()
 
 # Response handlers should call set_response() on the response to
 # set the response code, and set_content() to set the content type.
-response_handlers  =  {"GET":{}, "POST":{}}
+response_handlers  =  {"GET":{}, "POST":{}, "DELETE":{}}
 
 
 # Functions
@@ -51,6 +51,11 @@ def addPost(handlers):
 	global response_handlers
 	response_handlers["POST"] = \
 	        dict(response_handlers["POST"].items() + handlers.index.items())
+
+def addDelete(handlers):
+	global response_handlers
+	response_handlers["DELETE"] = \
+	        dict(response_handlers["DELETE"].items() + handlers.index.items())
 
 
 # Creates and returns the appropriate response type for the request
