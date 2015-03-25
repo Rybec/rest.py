@@ -10,6 +10,10 @@ import os
 BUFFER_SIZE = 1024 * 8
 
 
+# Runtime constants
+CWD = os.getcwd()
+
+
 # Internal globals
 
 # Each element must be a dict of resource keys referencing the response
@@ -17,7 +21,7 @@ BUFFER_SIZE = 1024 * 8
 
 # Response handlers should call set_response() on the response to
 # set the response code, and set_content() to set the content type.
-response_handlers  =  {"GET":{}, "POST":{}}
+response_handlers  =  {"GET":{}, "POST":{}, "DELETE":{}}
 
 
 # Functions
@@ -47,6 +51,11 @@ def addPost(handlers):
 	global response_handlers
 	response_handlers["POST"] = \
 	        dict(response_handlers["POST"].items() + handlers.index.items())
+
+def addDelete(handlers):
+	global response_handlers
+	response_handlers["DELETE"] = \
+	        dict(response_handlers["DELETE"].items() + handlers.index.items())
 
 
 # Creates and returns the appropriate response type for the request
@@ -170,18 +179,28 @@ class ResourceResponse(Response):
 
 		# If this is a POST request, let's kindly parse the data if it is
 		# form data.
-		if (request.command == "POST" and \
-		    "Content-Type" in request.headers and \
-		    "application/x-www-form-urlencoded" in request.headers["Content-Type"]):
+		if request.command == "POST" and \
+		   "Content-Type" in request.headers and \
+		   "application/x-www-form-urlencoded" in request.headers["Content-Type"]:
 			try:
 				clength = int(request.headers["Content-Length"])
 
 				self.postquery = request.rfile.read(clength)
+				# Turn the form data into a dictionary
 				self.postquery = {key:value
 				                  for key, value in [element.split("=")
 				                  for element in self.postquery.split("&")]}
 			except:
 				pass
+		# If the POST data is JSON data, we will read it into
+		# a string for the application.
+		elif request.command == "POST" and \
+		     "Content-Type" in request.headers and \
+		     "application/json" in request.headers["Content-Type"]:
+
+			clength = int(request.headers["Content-Length"])
+			self.postjson = request.rfile.read(clength)
+
 
 		# Ok, so we will handle cookies too...
 		if "Cookie" in request.headers:
@@ -236,13 +255,7 @@ class FileResponse(Response):
 		super(FileResponse, self).__init__(request)
 
 		# Trim any query string
-		self.path = self.request.path.split("?", 1)[0]
-
-# Python's HTTP module appears to already do this
-# consider this part for deletion
-		# Convert to absolute path (this will remove symbols
-		# like "..", to ensure security)
-		self.path = os.path.abspath(self.path)
+		self.path = CWD + os.path.normpath(self.request.path.split("?", 1)[0])
 
 		# Find the MIME type and set the content
 		(self.content, _) = mimetypes.guess_type(self.path)
@@ -253,7 +266,7 @@ class FileResponse(Response):
 	def send(self):
 		file_size = 0
 		try:
-			file_size = os.path.getsize(os.getcwd() + self.path)
+			file_size = os.path.getsize(self.path)
 		except OSError as e:
 			data = ""
 			if e.errno == 2:	# No such file...
@@ -278,7 +291,7 @@ class FileResponse(Response):
 
 		file = None
 		try:
-			file = open(os.getcwd() + self.path)
+			file = open(self.path)
 
 			# Send HTTP header data
 			self.request.send_response(self.response)
