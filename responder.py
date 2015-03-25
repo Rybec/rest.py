@@ -266,7 +266,9 @@ class FileResponse(Response):
 	def send(self):
 		file_size = 0
 		try:
-			file_size = os.path.getsize(self.path)
+# !!!!!!!!!!!!!!!!!!!!! Testing this replacement
+#			file_size = os.path.getsize(self.path)
+			file_size = os.stat(self.path).st_size
 		except OSError as e:
 			data = ""
 			if e.errno == 2:	# No such file...
@@ -302,6 +304,8 @@ class FileResponse(Response):
 			# Send the file data in chunks of BUFFER_SIZE
 			buffer = file.read(BUFFER_SIZE)
 			while buffer:
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!   Debug code
+				print len(buffer)
 				self.request.wfile.write(buffer)
 				buffer = file.read(BUFFER_SIZE)
 		except Exception as e:
