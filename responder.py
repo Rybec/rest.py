@@ -10,10 +10,6 @@ import os
 BUFFER_SIZE = 1024 * 8
 
 
-# Runtime constants
-CWD = os.getcwd()
-
-
 # Internal globals
 
 # Each element must be a dict of resource keys referencing the response
@@ -254,8 +250,10 @@ class FileResponse(Response):
 		# Call parent constructor
 		super(FileResponse, self).__init__(request)
 
+		cwd = os.getcwd()
+
 		# Trim any query string
-		self.path = CWD + os.path.normpath(self.request.path.split("?", 1)[0])
+		self.path = cwd + os.path.normpath(self.request.path.split("?", 1)[0])
 
 		# Find the MIME type and set the content
 		(self.content, _) = mimetypes.guess_type(self.path)
