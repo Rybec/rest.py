@@ -302,6 +302,15 @@ class FileResponse(Response):
 			while buffer:
 				self.request.wfile.write(buffer)
 				buffer = file.read(BUFFER_SIZE)
+		except IOError as e:
+			data = ""
+			if e.errno == 2:	# No such file...
+				self.set_response(404)
+				self.send_error()
+			else:			# errno: 13, Permission denied
+				print e
+				self.set_response(403)
+				self.send_error()
 		except Exception as e:
 			print e
 			# We have already checked to make sure the file
