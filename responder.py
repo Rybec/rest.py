@@ -253,7 +253,7 @@ class FileResponse(Response):
 		cwd = os.getcwd()
 
 		# Trim any query string
-		self.path = cwd + os.path.normpath(self.request.path.split("?", 1)[0])
+		self.path = cwd + urllib.url2pathname(os.path.normpath(self.request.path.split("?", 1)[0]))
 
 		# Find the MIME type and set the content
 		(self.content, _) = mimetypes.guess_type(self.path)
