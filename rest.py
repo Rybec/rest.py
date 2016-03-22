@@ -13,6 +13,9 @@ gethandlers  = ["gethandlers.py"]
 posthandlers = ["posthandlers.py"]
 deletehandlers = ["deletehandlers.py"]
 
+# Port to run server on
+server_port = 8000
+
 # This should probably be converted to a config file, or a section
 # in a config file.  (In fact, maybe all of the modules should be
 # listed in a config file.  This might make dynamically loading
@@ -129,7 +132,8 @@ class ThreadedHTTPServer(ThreadingMixIn, BaseHTTPServer.HTTPServer):
 	'''
 
 def run():
-	httpd = ThreadedHTTPServer(("", 8000), RequestHandler)
+	global server_port
+	httpd = ThreadedHTTPServer(("", server_port), RequestHandler)
 
 	# If we run this in a separate thread, then we can
 	# run some kind of command line interface in the
