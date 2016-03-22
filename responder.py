@@ -10,10 +10,6 @@ import os
 BUFFER_SIZE = 1024 * 8
 
 
-# Runtime constants
-CWD = os.getcwd()
-
-
 # Internal globals
 
 # Each element must be a dict of resource keys referencing the response
@@ -254,8 +250,10 @@ class FileResponse(Response):
 		# Call parent constructor
 		super(FileResponse, self).__init__(request)
 
+		cwd = os.getcwd()
+
 		# Trim any query string
-		self.path = CWD + os.path.normpath(self.request.path.split("?", 1)[0])
+		self.path = cwd + urllib.url2pathname(os.path.normpath(self.request.path.split("?", 1)[0]))
 
 		# Find the MIME type and set the content
 		(self.content, _) = mimetypes.guess_type(self.path)
@@ -291,7 +289,7 @@ class FileResponse(Response):
 
 		file = None
 		try:
-			file = open(self.path)
+			file = open(self.path, 'rb')
 
 			# Send HTTP header data
 			self.request.send_response(self.response)
@@ -304,6 +302,15 @@ class FileResponse(Response):
 			while buffer:
 				self.request.wfile.write(buffer)
 				buffer = file.read(BUFFER_SIZE)
+		except IOError as e:
+			data = ""
+			if e.errno == 2:	# No such file...
+				self.set_response(404)
+				self.send_error()
+			else:			# errno: 13, Permission denied
+				print e
+				self.set_response(403)
+				self.send_error()
 		except Exception as e:
 			print e
 			# We have already checked to make sure the file
