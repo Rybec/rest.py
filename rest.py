@@ -9,9 +9,19 @@ if (sys.version_info.major == 2):
 	import BaseHTTPServer
 	from SocketServer import ThreadingMixIn # Could use ForkingMixIn to multiprocess, but don't
 elif (sys.version_info.major == 3):
-	import importlib as imp
+	import types
+	import importlib.machinery
 	import http.server as BaseHTTPServer
 	from socketserver import ThreadingMixIn # Could use ForkingMixIn to multiprocess, but don't
+
+	class imp():
+		def load_source(name, path):
+			loader = importlib.machinery.SourceFileLoader(name, path)
+			mod = types.ModuleType(loader.name)
+			loader.exec_module(mod)
+			return mod
+
+
 
 import responder
 
@@ -53,33 +63,36 @@ def init():
 			mod = imp.load_source(name, "resources/" + handler)
 			responder.addGet(mod)
 			responder.addPost(mod)
-		except:
+		except Exception as e:
 			print("Unable to load shadowhanders from " + handler)
+			print("Reason: " + str(e) + "\n")
 
 	for handler in gethandlers:
 		name = handler.split('.')[0]
 		try:
 			resource = imp.load_source(name, "resources/" + handler)
 			responder.addGet(resource)
-		except:
+		except Exception as e:
 			print("Unable to load gethanders from " + handler)
+			print("Reason: " + str(e) + "\n")
 
 	for handler in posthandlers:
 		name = handler.split('.')[0]
 		try:
 			resource = imp.load_source(name, "resources/" + handler)
 			responder.addPost(resource)
-		except:
+		except Exception as e:
 			print("Unable to load posthanders from " + handler)
-
+			print("Reason: " + str(e) + "\n")
 
 	for handler in deletehandlers:
 		name = handler.split('.')[0]
 		try:
 			resource = imp.load_source(name, "resources/" + handler)
 			responder.addDelete(resource)
-		except:
+		except Exception as e:
 			print("Unable to load deletehanders from " + handler)
+			print("Reason: " + str(e) + "\n")
 
 
 # We need two types of response object, probably in an external

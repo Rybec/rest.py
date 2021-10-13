@@ -42,17 +42,17 @@ def initPost(handlers):
 def addGet(handlers):
 	global response_handlers
 	response_handlers["GET"] = \
-	        dict(response_handlers["GET"].items() + handlers.index.items())
+	        dict(list(response_handlers["GET"].items()) + list(handlers.index.items()))
 
 def addPost(handlers):
 	global response_handlers
 	response_handlers["POST"] = \
-	        dict(response_handlers["POST"].items() + handlers.index.items())
+	        dict(list(response_handlers["POST"].items()) + list(handlers.index.items()))
 
 def addDelete(handlers):
 	global response_handlers
 	response_handlers["DELETE"] = \
-	        dict(response_handlers["DELETE"].items() + handlers.index.items())
+	        dict(list(response_handlers["DELETE"].items()) + list(handlers.index.items()))
 
 
 # Creates and returns the appropriate response type for the request
