@@ -1,12 +1,20 @@
 #!/usr/bin/env python
 
-import BaseHTTPServer
-from SocketServer import ThreadingMixIn # Could use ForkingMixIn to multiprocess, but don't
+
 from os import curdir, sep, chdir, getcwd, path
 import sys
-import imp
+
+if (sys.version_info.major == 2):
+	import imp
+	import BaseHTTPServer
+	from SocketServer import ThreadingMixIn # Could use ForkingMixIn to multiprocess, but don't
+elif (sys.version_info.major == 3):
+	import importlib as imp
+	import http.server as BaseHTTPServer
+	from socketserver import ThreadingMixIn # Could use ForkingMixIn to multiprocess, but don't
 
 import responder
+
 
 # These are files that should be in webroot/resources/
 gethandlers  = ["gethandlers.py"]
@@ -33,8 +41,8 @@ def init():
 	sys.path.append('resources')
 
 	if not path.isdir('resources'):
-		print "No resources directory found, serving only static content"
-		print "Note that this means shadowing is disabled"
+		print("No resources directory found, serving only static content")
+		print("Note that this means shadowing is disabled")
 		return
 
 	# Add the shadow handlers first to allow the
@@ -46,7 +54,7 @@ def init():
 			responder.addGet(mod)
 			responder.addPost(mod)
 		except:
-			print "Unable to load shadowhanders from " + handler
+			print("Unable to load shadowhanders from " + handler)
 
 	for handler in gethandlers:
 		name = handler.split('.')[0]
@@ -54,7 +62,7 @@ def init():
 			resource = imp.load_source(name, "resources/" + handler)
 			responder.addGet(resource)
 		except:
-			print "Unable to load gethanders from " + handler
+			print("Unable to load gethanders from " + handler)
 
 	for handler in posthandlers:
 		name = handler.split('.')[0]
@@ -62,7 +70,7 @@ def init():
 			resource = imp.load_source(name, "resources/" + handler)
 			responder.addPost(resource)
 		except:
-			print "Unable to load posthanders from " + handler
+			print("Unable to load posthanders from " + handler)
 
 
 	for handler in deletehandlers:
@@ -71,7 +79,7 @@ def init():
 			resource = imp.load_source(name, "resources/" + handler)
 			responder.addDelete(resource)
 		except:
-			print "Unable to load deletehanders from " + handler
+			print("Unable to load deletehanders from " + handler)
 
 
 # We need two types of response object, probably in an external
@@ -149,20 +157,20 @@ if __name__ == "__main__":
 			webroot = sys.argv[sys.argv.index("--webroot") + 1]
 			chdir(webroot)
 		except:
-			print "\tInvalid directory"
-			print "\tExample: python webserver.py --webroot /var/www\n"
+			print("\tInvalid directory")
+			print("\tExample: python webserver.py --webroot /var/www\n")
 			
 			exit()
 
 
-		print "Using directory " + getcwd() + " as webroot\n"
+		print("Using directory " + getcwd() + " as webroot\n")
 
 	else:
-		print "This must be run from webroot (the location you want static"
-		print "files to be served from), or it must use the --webroot switch"
-		print "to explicitly set the webroot.\n"
+		print("This must be run from webroot (the location you want static")
+		print("files to be served from), or it must use the --webroot switch")
+		print("to explicitly set the webroot.\n")
 
-		print "Using current directory, " + getcwd() + " as webroot"
+		print("Using current directory, " + getcwd() + " as webroot")
 
 	init()
 

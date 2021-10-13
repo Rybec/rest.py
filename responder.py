@@ -1,5 +1,6 @@
 import mimetypes
 import urllib
+import urllib.request
 import os
 
 # Constants
@@ -125,7 +126,7 @@ class Response(object):
 		self.request.end_headers()
 
 		# Send the data
-		self.request.wfile.write(data)
+		self.request.wfile.write(bytes(data, encoding="utf-8"))
 
 	
 
@@ -220,7 +221,7 @@ class ResourceResponse(Response):
 			self.send_error()
 			return
 		except Exception as e:
-			print e
+			print(e)
 			self.set_response(500)
 			self.send_error()
 			return
@@ -253,7 +254,7 @@ class FileResponse(Response):
 		cwd = os.getcwd()
 
 		# Trim any query string
-		self.path = cwd + urllib.url2pathname(os.path.normpath(self.request.path.split("?", 1)[0]))
+		self.path = cwd + urllib.request.url2pathname(os.path.normpath(self.request.path.split("?", 1)[0]))
 
 		# Find the MIME type and set the content
 		(self.content, _) = mimetypes.guess_type(self.path)
@@ -271,7 +272,7 @@ class FileResponse(Response):
 				self.set_response(404)
 				self.send_error()
 			else:			# errno: 13, Permission denied
-				print e
+				print(e)
 				self.set_response(403)
 				self.send_error()
 			# We will consider anything that is not 404 to be
@@ -280,7 +281,7 @@ class FileResponse(Response):
 			# that could be used to compromise security.
 			return
 		except Exception as e:
-			print e
+			print(e)
 			# If it is not an OSError, it is probably an
 			# internal server error
 			self.set_response(500)
@@ -308,11 +309,11 @@ class FileResponse(Response):
 				self.set_response(404)
 				self.send_error()
 			else:			# errno: 13, Permission denied
-				print e
+				print(e)
 				self.set_response(403)
 				self.send_error()
 		except Exception as e:
-			print e
+			print(e)
 			# We have already checked to make sure the file
 			# exists and is readable.  If we fail now, it is
 			# probably something else.
