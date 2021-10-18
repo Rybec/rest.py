@@ -160,7 +160,7 @@ class ResourceResponse(Response):
 				# We will assume that the malformed query
 				# string was intentional, and we will let
 				# the application handle it
-				self.query = urllib.unquote_plus(self.query)
+				self.query = urllib.parse.unquote_plus(self.query)
 				pass
 		else:
 			self.resource = self.request.path.strip("/")
