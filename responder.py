@@ -234,10 +234,10 @@ class ResourceResponse(Response):
 		self.request.end_headers()
 
 		# Send the data
-		self.request.wfile.write(data)
+		self.request.wfile.write(bytes(data, encoding="UTF-8"))
 
 	def _send_cookies(self):
-		for k, v in self.cookie.iteritems():
+		for k, v in self.cookie.items():
 			cookie = str(k) + "=" + str(v)
 			self.request.send_header('Set-Cookie', cookie)
 
