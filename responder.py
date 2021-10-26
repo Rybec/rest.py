@@ -83,6 +83,7 @@ class Response(object):
 		self.request  = request
 		self.response = 200		# Default value
 		self.content  = 'text/html'	# Default value
+		self.extra_headers = {}
 
 	def set_response(self, code):
 		if code in self.request.responses:
@@ -93,6 +94,9 @@ class Response(object):
 
 	def set_content(self, contenttype):
 		self.content = contenttype
+
+	def set_extra_header(self, header, value):
+		self.extra_headers[header] = value
 
 	# Override this!
 	# This should send the headers and write the data
@@ -123,6 +127,8 @@ class Response(object):
 		self.request.send_response(self.response)
 		self.request.send_header('Content-Type', 'text/html')
 		self.request.send_header('Content-Length', len(data))
+		for k, v in self.extra_headers.items():
+			self.request.send_header(k, v)
 		self.request.end_headers()
 
 		# Send the data
@@ -149,19 +155,17 @@ class ResourceResponse(Response):
 		if "?" in self.request.path:
 			self.resource, self.query = \
 			        self.request.path.strip("/").split("?", 1)
-
 			# Split the query string first at & and then split
 			# expressions at = and put the result into a dictionary
 			try:
-				self.query = {urllib.unquote_plus(key):urllib.unquote_plus(value)
+				self.query = {urllib.parse.unquote_plus(key):urllib.parse.unquote_plus(value)
 				              for key, value in [element.split("=")
 				              for element in self.query.split("&")]}
-			except:
+			except Exception as e:
 				# We will assume that the malformed query
 				# string was intentional, and we will let
 				# the application handle it
 				self.query = urllib.parse.unquote_plus(self.query)
-				pass
 		else:
 			self.resource = self.request.path.strip("/")
 			self.query = None
@@ -230,11 +234,16 @@ class ResourceResponse(Response):
 		self.request.send_response(self.response)
 		self.request.send_header('Content-Type', self.content)
 		self.request.send_header('Content-Length', len(data))
+		for k, v in self.extra_headers.items():
+			self.request.send_header(k, v)
 		self._send_cookies()
 		self.request.end_headers()
 
 		# Send the data
-		self.request.wfile.write(bytes(data, encoding="UTF-8"))
+		if type(data) == str:
+			self.request.wfile.write(bytes(data, encoding="UTF-8"))
+		else:
+			self.request.wfile.write(data)
 
 	def _send_cookies(self):
 		for k, v in self.cookie.items():
