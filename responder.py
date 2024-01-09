@@ -20,6 +20,18 @@ BUFFER_SIZE = 1024 * 8
 # set the response code, and set_content() to set the content type.
 response_handlers  =  {"GET":{}, "POST":{}, "DELETE":{}}
 
+# Filters are functions that take a request and return a response
+# handler if the request matches or None otherwise.  Filters should
+# be very fast, to minimize response latency.
+#
+# Filters are primarily intended to capture malicious requests,
+# so that they can be handled differently from legitimate traffic.
+#
+# Filters should be used carefully, both to minimize response
+# latency and to avoid false positives that could negtively impact
+# the experience of legitimate users.
+response_filters = []
+
 
 # Functions
 
@@ -54,12 +66,34 @@ def addDelete(handlers):
 	response_handlers["DELETE"] = \
 	        dict(list(response_handlers["DELETE"].items()) + list(handlers.index.items()))
 
+def addFilter(filters):
+	global response_filters
+	response_filters = response_filters + filters.index
+
+
+
+def filter_request(request):
+	global response_filters
+
+	triggered_filter = None
+	for filter in response_filters:
+		triggered_filter = filter(request)
+		if triggered_filter is not None:
+			return triggered_filter
+
 
 # Creates and returns the appropriate response type for the request
 def getresponse(request):
 	global response_handlers
 	# Get the resource name
 	resource = request.path.strip("/").split("?", 1)[0].split("/", 1)[0]
+
+
+	# Filter request
+	triggered_filter = filter_request(request)
+	if triggered_filter is not None:
+		return triggered_filter(request)
+
 
 	# Check if the first path element is a valid resource
 	if resource in response_handlers[request.command]:

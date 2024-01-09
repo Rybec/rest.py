@@ -27,9 +27,10 @@ import responder
 
 
 # These are files that should be in webroot/resources/
-gethandlers  = ["gethandlers.py"]
-posthandlers = ["posthandlers.py"]
+gethandlers    = ["gethandlers.py"]
+posthandlers   = ["posthandlers.py"]
 deletehandlers = ["deletehandlers.py"]
+filters        = ["filters.py"]
 
 # Port to run server on
 server_port = 8000
@@ -47,6 +48,7 @@ def init():
 	global posthandlers
 	global deletehandlers
 	global shadowhandler
+	global filters
 
 	sys.path.append('resources')
 
@@ -92,6 +94,15 @@ def init():
 			responder.addDelete(resource)
 		except Exception as e:
 			print("Unable to load deletehanders from " + handler)
+			print("Reason: " + str(e) + "\n")
+
+	for filter in filters:
+		name = filter.split('.')[0]
+		try:
+			resource = imp.load_source(name, "resources/" + filter)
+			responder.addFilter(resource)
+		except Exception as e:
+			print("Unable to load filters from " + filter)
 			print("Reason: " + str(e) + "\n")
 
 
@@ -165,13 +176,22 @@ def run():
 	httpd.serve_forever()
 
 if __name__ == "__main__":
+	if "--port" in sys.argv:
+		try:
+			server_port = int(sys.argv[sys.argv.index("--port") + 1])
+		except Exception as e:
+			print("\tInvalid port")
+			print("\tExample: python rest.py --port 80")
+			print("Reason: " + str(e) + "\n")
+
 	if "--webroot" in sys.argv:
 		try:
 			webroot = sys.argv[sys.argv.index("--webroot") + 1]
 			chdir(webroot)
-		except:
+		except Exception as e:
 			print("\tInvalid directory")
-			print("\tExample: python webserver.py --webroot /var/www\n")
+			print("\tExample: python rest.py --webroot /var/www\n")
+			print("Reason: " + str(e) + "\n")
 			
 			exit()
 
