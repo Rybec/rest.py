@@ -1,7 +1,13 @@
 import mimetypes
-import urllib
-import urllib.request
+import sys
 import os
+
+if sys.version_info.major == 2:
+	import urllib2 as urllib
+	urllib.request = urllib
+elif sys.version_info.major == 3:
+	import urllib
+	import urllib.request
 
 # Constants
 
